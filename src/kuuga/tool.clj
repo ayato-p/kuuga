@@ -10,7 +10,7 @@
   {:pre [(or (keyword? tag-keyword) (string? tag-keyword) (nil? tag-keyword))]}
   (when-let [parsed (some->> (cond-> tag-keyword (keyword? tag-keyword) name)
                              (re-matches re-tag))]
-    (some-> parsed (update 3 maybe-parse-css-classes))))
+    (some-> parsed (update-in [3] maybe-parse-css-classes))))
 
 (defn parse-tag-vector [tag-vector]
   {:pre [(vector? tag-vector)]}

@@ -1,3 +1,1 @@
-* Kuuga
-
-  *No Fear No Pain*
+* Kuuga [[https://circleci.com/gh/ayato-p/kuuga/tree/master][https://circleci.com/gh/ayato-p/kuuga/tree/master.svg?style=svg]] [[https://codecov.io/gh/ayato-p/kuuga][https://codecov.io/gh/ayato-p/kuuga/branch/master/graph/badge.svg]]
