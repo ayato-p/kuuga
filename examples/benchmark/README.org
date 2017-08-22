@@ -1,0 +1,51 @@
+* Benchmark
+
+  You can execute =lein run= in your machine.
+
+** Results
+
+*** Naive version
+
+  #+begin_example
+  Evaluation count : 140499180 in 60 samples of 2341653 calls.
+               Execution time mean : 442.049590 ns
+      Execution time std-deviation : 11.856742 ns
+     Execution time lower quantile : 421.885930 ns ( 2.5%)
+     Execution time upper quantile : 471.258273 ns (97.5%)
+                     Overhead used : 8.415944 ns
+
+  Found 2 outliers in 60 samples (3.3333 %)
+          low-severe       2 (3.3333 %)
+   Variance from outliers : 14.1856 % Variance is moderately inflated by outliers
+  #+end_example
+
+*** Macro version
+
+  #+begin_example
+  Evaluation count : 57525360 in 60 samples of 958756 calls.
+               Execution time mean : 1.102980 µs
+      Execution time std-deviation : 41.617638 ns
+     Execution time lower quantile : 1.042000 µs ( 2.5%)
+     Execution time upper quantile : 1.216705 µs (97.5%)
+                     Overhead used : 8.415944 ns
+
+  Found 4 outliers in 60 samples (6.6667 %)
+          low-severe       1 (1.6667 %)
+          low-mild         3 (5.0000 %)
+   Variance from outliers : 23.8568 % Variance is moderately inflated by outliers
+  #+end_example
+
+*** Function version
+
+  #+begin_example
+  Evaluation count : 471300 in 60 samples of 7855 calls.
+               Execution time mean : 128.745066 µs
+      Execution time std-deviation : 5.659882 µs
+     Execution time lower quantile : 119.689550 µs ( 2.5%)
+     Execution time upper quantile : 142.009695 µs (97.5%)
+                     Overhead used : 8.415944 ns
+
+  Found 2 outliers in 60 samples (3.3333 %)
+          low-severe       2 (3.3333 %)
+   Variance from outliers : 30.3155 % Variance is moderately inflated by outliers
+  #+end_example

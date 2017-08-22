@@ -27,7 +27,7 @@
 
 (defn naive-form [{:keys [errors values] :as opts}]
   [:form
-   [:div.form-group {:method :post}
+   [:div.form-group
     [:label {:for "input-email"} "Email address"]
     [:input#input-email.form-control
      {:type :email :name :email
@@ -65,7 +65,7 @@
                               []
                               contents))]
     `[~tagkw
-      (update-input-opts ~options ~tagopts)
+      ~tagopts
       ~@contents]))
 
 (defn update-input-opts [opts tagopts]
@@ -86,7 +86,7 @@
   (ultimate/transform
    opts
    [:form
-    [:div.form-group {:method :post}
+    [:div.form-group
      [:label {:for "input-email"} "Email address"]
      [:input#input-email.form-control
       {:type :email :name :email :placeholer "Enter email"}]
