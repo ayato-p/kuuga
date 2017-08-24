@@ -24,6 +24,8 @@ jobs:
             - ~/.m2
           key: kuuga-deps-{{ checksum "project.clj" }}
 
+      - run: lein cljsbuild
       - run: lein all test
+      - run: jjs target/nashorn/test.js
       - run: lein cloverage
       - run: bash <(curl -s https://codecov.io/bash) -f target/coverage/codecov.json
