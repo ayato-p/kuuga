@@ -1,11 +1,14 @@
 (ns kuuga.mighty-test
-  (:require [clojure.test :as t]
+  (:require #?(:clj [clojure.test :as t]
+               :cljs [cljs.test :as t])
             [kuuga.growing :as k.growing]
             [kuuga.mighty :as k.mighty]
             [kuuga.tool :as k.tool]
             [test-helper :as helper]))
 
-(reset-meta! *ns* {})
+#?(:clj
+   (reset-meta! *ns* {}))
+
 (t/use-fixtures :each
   (fn [f]
     (helper/reset-multifn)

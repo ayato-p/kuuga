@@ -1,6 +1,7 @@
 (ns kuuga.tool-test
   (:require [kuuga.tool :as k.tool]
-            [clojure.test :as t]))
+            #?(:clj [clojure.test :as t]
+               :cljs [cljs.test :as t])))
 
 (t/deftest parse-tag-keyword-test
   (t/testing "simple test cases"
