@@ -5,6 +5,7 @@
 (defn transform*
   ([hiccup-data] (transform* nil hiccup-data))
   ([options hiccup-data]
+   (k.growing/reset-context!)
    (let [f (partial k.growing/modifier options)]
      (walk/prewalk f hiccup-data))))
 

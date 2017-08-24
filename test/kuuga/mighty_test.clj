@@ -11,7 +11,7 @@
     (helper/reset-multifn)
     (f)))
 
-(t/deftest transform-test
+(t/deftest transform*-test
   (t/testing "simple test cases"
     (do
       (defmethod k.growing/transform-by-tag :input
@@ -48,3 +48,36 @@
 
       [:div#kuuga.mighty.form [:input {:name :weapon}]]
       [:div#kuuga.mighty.form '([:input {:name :weapon :value :sword}])])))
+
+(t/deftest with-transform-ctx-test
+  (t/testing "with transform-context test"
+    (do
+      (defmethod k.growing/transform-by-tag :select
+        [_ opts tagvec]
+        (let [[tagkw tagopts contents] (k.tool/parse-tag-vector tagvec)
+              tname (:name tagopts)]
+          (swap! k.growing/+transform-context+ assoc :current-select tname)
+          (cond-> [tagkw]
+            tagopts (conj tagopts)
+            contents (conj contents))))
+
+      (defmethod k.growing/transform-by-tag :option
+        [_ opts tagvec]
+        (let [values (:values opts)
+              [tagkw tagopts contents] (k.tool/parse-tag-vector tagvec)
+              cur-select (:current-select @k.growing/+transform-context+)
+              tagopts (cond-> tagopts
+                        (= (get values cur-select) (:value tagopts))
+                        (assoc :selected true))]
+          (cond-> [tagkw]
+            tagopts (conj tagopts)
+            contents (conj contents)))))
+
+    (t/is (= (k.mighty/transform*
+              {:values {:form :ultimate}}
+              [:select {:name :form}
+               [:option {:value :mighty}]
+               [:option {:value :ultimate}]])
+             [:select {:name :form}
+              '([:option {:value :mighty}]
+                [:option {:value :ultimate :selected true}])]))))
