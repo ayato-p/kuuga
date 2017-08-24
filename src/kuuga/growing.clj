@@ -3,6 +3,11 @@
 
 (declare transform-by-tag transform-by-id transform-by-class)
 
+(defonce +transform-context+ (atom {}))
+
+(defn reset-context! []
+  (reset! +transform-context+ {}))
+
 (defn modifier [options tag-vector]
   (if (vector? tag-vector)
     (let [[tag-keyword & _] tag-vector
