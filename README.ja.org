@@ -1,0 +1,212 @@
+* Kuuga [[https://circleci.com/gh/ayato-p/kuuga/tree/master][https://circleci.com/gh/ayato-p/kuuga/tree/master.svg?style=svg]] [[https://codecov.io/gh/ayato-p/kuuga][https://codecov.io/gh/ayato-p/kuuga/branch/master/graph/badge.svg]] [[https://opensource.org/licenses/MIT][https://img.shields.io/badge/License-MIT-blue.svg]]
+
+  #+begin_quote
+  "こんな奴らのために！これ以上誰かの涙は見たくない！皆に笑顔でいてほしいんです！だから見ててください…俺の…変身！！"
+  ― 五代が初めてマイティフォームに変身する際に、一条薫に向かって放った言葉
+  #+end_quote
+
+  KuugaはHiccup(-like)データ構造のための、拡張可能な変換器です。変換ルールは自由に定義することができます。
+
+** HTMLのフォームを記述する際の課題
+
+   HTMLのフォームというのはどのように記述しても冗長になりがちです。例えばサブミットしたフォームがバリデーションにひっかかったら、フォーム上にエラーを表示したり、ユーザーが入力していた値を再描画したりしないといけません。また、エラーの表示方法はCSSフレームワークによって違うことが多々あるため、ユーザーはCSSフレームワークのお作法に従ってフォームを書き換える必要があります。
+
+   例えば[[https://getbootstrap.com/][Bootstrap4]]を使った簡単なフォームの例は次の通りです。
+
+   #+begin_src clojure
+   (defn naive-form [{:keys [errors values] :as opts}]
+     [:form
+      [:div.form-group {:method :post}
+       [:label {:for "input-email"} "Email address"]
+       [:input#input-email.form-control
+        {:type :email :name :email
+         :class (if (contains? errors :email) "is-invalid" "is-valid")
+         :value (:email values)
+         :placeholer "Enter email"}]
+       [:div.invalid-feedback (:email errors)]
+       [:small.form-text.text-muted
+        "We'll never share your email with anyone else."]]
+      [:div.form-group
+       [:label {:for "input-password"} "Password"]
+       [:input#input-password.form-control
+        {:type :password :name :password
+         :class (if (contains? errors :password) "is-invalid" "is-valid")
+         :value (:password values)
+         :placeholer "Password"}]
+       [:div.invalid-feedback (:password errors)]]
+      [:button.btn.btn-primary {:type :submit} "Submit"]])
+   #+end_src
+
+   /このコード辺の完全な例はexamples/bootstrapディレクトリにあります/
+
+   =input= タグがエラーだったなら =is-invalid= クラスを付与して、前回入力した値があるならそれを =value= として利用する…。全てのフォーム、全ての項目で同じようなことを繰り返し記述する必要があります。正直、毎回こんな風に書くのは嫌ですよね。私は嫌です。
+
+   これを解決するのがKuugaです。Kuugaを使うことによって、次のようにフォームを記述することができます。
+
+   #+begin_src clojure
+   [:form
+    [:div.form-group {:method :post}
+     [:label {:for "input-email"} "Email address"]
+     [:input#input-email.form-control
+      {:type :email :name :email :placeholer "Enter email"}]
+     [:small.form-text.text-muted
+      "We'll never share your email with anyone else."]]
+    [:div.form-group
+     [:label {:for "input-password"} "Password"]
+     [:input#input-password.form-control
+      {:type :password :name :password :placeholer "Password"}]]
+    [:button.btn.btn-primary {:type :submit} "Submit"]]
+   #+end_src
+
+   エラーに関連するようなコードがフォーム上からなくなり、単純なHiccupデータとして定義できるようになりました。具体的な使い方は使い方 を読んでください。
+
+** インストール
+
+   以下を =project.clj= に依存ライブラリとして追加してください。
+
+   [[https://clojars.org/ayato_p/kuuga][https://img.shields.io/clojars/v/ayato_p/kuuga.svg]]
+
+** 使い方
+
+   Kuugaは任意のHTMLタグ、id属性、class属性に対して変換ルールを記述することができます。変換ルールはタグベクターのタグ名にのみ依存しています。
+
+   変換ルールを書くのは簡単で、例えば =input= タグに対応する変換ルールは以下のように書くことができます。
+
+   #+begin_src clojure
+   (require '[kuuga.growing :as growing]
+            '[kuuga.tool :as tool])
+
+   (defmethod growing/transform-by-tag :input
+     [_ options tag-vector]
+     (let [values (:values options)
+           [tag-name tag-options contents] (tool/parse-tag-vector tag-vector)
+           tname (:name tag-options)
+           tag-options (cond-> tag-options
+                         (get values tname) (assoc :value (get values tname)))]
+       [tag-name tag-options contents]))
+   #+end_src
+
+   Kuugaの拡張ポイントは =kuuga.growing= ネームスペースに全て用意されています。また、 =transform-by-tag=, =transform-by-id=, =transform-by-class= とそれぞれ用意していますが、全て同じようにマルチメソッドとして定義しています。
+
+   ユーザーは上の例のように =defmethod= によってメソッドを追加することで新しい変換ルールを追加することができます。各マルチメソッドは第1引数にディスパッチ値、第2引数に変換畤のオプション、第3引数にタグベクターを受けとり、変換されたタグベクターを返します(後述しますが必ずしもタグベクターを返す必要はありません)。また、各マルチメソッドはディスパッチ値としてキーワードを渡されるので、新しい変換ルールを追加する場合はディスパッチ値をキーワードで指定してください。
+
+   任意のタグベクターはまずタグに基づく変換が行なわれ、その次にid属性に基づく変換、最後に各class属性に基づく変換が行なわれるようになっています。
+
+   最後にKuugaの変換器は関数バージョンとマクロバージョンの2種類を用意しています。どちらを利用するかによって、変換ルールの書き方が微妙に異なるため注意してください。
+
+*** 関数バージョンを利用する場合
+
+    関数バージョンの変換器は =kuuga.mighty= ネームスペースに用意してあります。特に理由がなければ =kuuga.mighty/transform= を利用することを推奨します。関数バージョンの変換器を利用する場合、変換ルールを書くのはとても簡単です。使い方の最初の例は関数バージョンの変換器を利用する場合に正しく動作します。次のように利用します。
+
+    #+begin_src clojure
+    (require '[kuuga.mighty :as mighty])
+
+    (def tagvec [:input {:name :username}])
+
+    (def transformed
+      (let [opts {:values {:username "ayato-p"}}]
+        (mighty/transform opts tagvec)))
+
+    transformed
+    ;;=> ([:input {:name :username, :value "ayato-p"} nil])
+
+    (require '[hiccup2.core :as hiccup])
+
+    (str (hiccup/html {:mode :html} transformed))
+    ;;=> "<input name=\"username\" value=\"ayato-p\"></input>"
+    #+end_src
+
+*** マクロバージョンを利用する場合
+
+    マクロバージョンの変換器は =kuuga.ultimate= ネームスペースに用意してあります。こちらも特に理由がなければ =kuuga.ultimate/transform= を利用してください。マクロバージョンの変換器は、マクロ展開畤に変換を行なうため、変換ルールの書き方にちょっとしたコツが必要です。
+
+    #+begin_src clojure
+    (require '[kuuga.growing :as growing])
+
+    (defn update-input-opts [options tag-options]
+      (let [values (:values options)
+            tname (:name tag-options)]
+        (cond-> tag-options
+          (get values tname) (assoc :value (get values tname)))))
+
+    (defmethod growing/transform-by-tag :input
+      [_ options tag-vector]
+      (let [[tag-name tag-options contents] (tool/parse-tag-vector tag-vector)]
+        `[~tag-name
+          (update-input-opts ~options ~tag-options)
+          ~@contents]))
+    #+end_src
+
+    この変換ルール用のマルチメソッドはマクロ展開中に利用されるため、変換ルール用の各マルチメソッドが引数に取る =options= は、マップではなくただのシンボルがやってくる可能性があることに注意しなければなりません。
+
+    実際に利用する場合は次のようになります。
+
+    #+begin_src clojure
+    (require '[kuuga.ultimate :as ultimate])
+
+    (def transformed
+      (let [opts {:values {:username "ayato-p"}}]
+        (ultimate/transform opts [:input {:name :username}])))
+
+    transformed
+    ;;=> ([:input {:name :username, :value "ayato-p"}])
+
+    (require '[hiccup2.core :as hiccup])
+
+    (str (hiccup/html {:mode :html} transformed))
+    ;; "<input name=\"username\" value=\"ayato-p\">"
+    #+end_src
+
+    マクロバージョンの変換器はHiccupのデータ構造を直接引数に取る必要があることにも注意してください。また、実際にマクロ展開畤に変換が行なわれていることは、次のように確認することができます。
+
+    #+begin_src clojure
+    (require '[clojure.walk :as walk])
+
+    (walk/macroexpand-all
+     '(ultimate/transform opts [:input {:name :username}]))
+    ;;=> (clojure.core/list [:input (user/update-input-opts opts {:name :username})])
+    #+end_src
+
+** ボーナスステージ
+
+   変換ルールのマルチメソッドは、必ずしもタグベクターを返さなくても良いと書きました。どういうことかというと、以下のようなことが出来るためです。
+
+   #+begin_src clojure
+   (require '[kuuga.growing :as growing]
+            '[kuuga.mighty :as mighty])
+
+   (defmethod growing/transform-by-tag :comment
+     [_ _ _])
+
+   (mighty/transform* [:comment "This is comment"])
+   ;;=> nil
+
+   (defmethod growing/transform-by-tag :+
+     [_ _ tag-vector]
+     (when-let [numbers (next tag-vector)]
+       (apply + numbers)))
+
+   (mighty/transform* [:+ 1 2 3])
+   ;;=> 6
+
+   (defmethod growing/transform-by-tag :field
+     [_ _ tag-vector]
+     (let [[_ label name] tag-vector]
+       [:div.form-group
+        [:label label]
+        [:input {:name name}]]))
+
+   (mighty/transform* [:field "Name" :username])
+   ;;=>
+   ;; [:div.form-group
+   ;;  [:label "Name"]
+   ;;  [:input {:name :username})]]
+   #+end_src
+
+
+** FAQ
+
+   - Q. 仮面ライダークウガが好きなんですか?
+   - A. 最高です
+   - Q. 何故、Kuugaという名前を付けたんですか?
+   - A. 変換 -> transform -> 変身-> 仮面ライダー -> クウガ

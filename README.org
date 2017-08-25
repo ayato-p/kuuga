@@ -1,1 +1,226 @@
-* Kuuga [[https://circleci.com/gh/ayato-p/kuuga/tree/master][https://circleci.com/gh/ayato-p/kuuga/tree/master.svg?style=svg]] [[https://codecov.io/gh/ayato-p/kuuga][https://codecov.io/gh/ayato-p/kuuga/branch/master/graph/badge.svg]]
+* Kuuga [[https://circleci.com/gh/ayato-p/kuuga/tree/master][https://circleci.com/gh/ayato-p/kuuga/tree/master.svg?style=svg]] [[https://codecov.io/gh/ayato-p/kuuga][https://codecov.io/gh/ayato-p/kuuga/branch/master/graph/badge.svg]] [[https://opensource.org/licenses/MIT][https://img.shields.io/badge/License-MIT-blue.svg]]
+
+  #+begin_quote
+  "I don't want to see people crying anymore because of those evil monsters! I want everyone to be happy! So look... at my... transformation!"
+  ―Yusuke Godai's words to Kaoru Ichijo before transforming into Mighty Form for the first time
+  #+end_quote
+
+  Kuuga is an extensible transformer for Hiccup(-like) data structures, where the transformation rules can be defined freely.
+
+  NOTE: [[https://en.wikipedia.org/wiki/Kamen_Rider_Kuuga][Kamen Rider Kuuga]] is a very famous/awesome Tokusatsu TV series/movie from Japan. If you have not watched it yet, you should :)
+
+** Problems with HTML forms
+
+   HTML forms end up being verbose.
+
+   For example:
+   - When there is a validation error, we need to render the errors on the form as well as the previous input values
+   - Each CSS framework defines their own way of indicating an error, forcing the developer to customize the form accordingly.
+
+   Below is a easy form using [[https://getbootstrap.com/][Bootstrap4]].
+
+   #+begin_src clojure
+   (defn naive-form [{:keys [errors values] :as opts}]
+     [:form
+      [:div.form-group {:method :post}
+       [:label {:for "input-email"} "Email address"]
+       [:input#input-email.form-control
+        {:type :email :name :email
+         :class (if (contains? errors :email) "is-invalid" "is-valid")
+         :value (:email values)
+         :placeholer "Enter email"}]
+       [:div.invalid-feedback (:email errors)]
+       [:small.form-text.text-muted
+        "We'll never share your email with anyone else."]]
+      [:div.form-group
+       [:label {:for "input-password"} "Password"]
+       [:input#input-password.form-control
+        {:type :password :name :password
+         :class (if (contains? errors :password) "is-invalid" "is-valid")
+         :value (:password values)
+         :placeholer "Password"}]
+       [:div.invalid-feedback (:password errors)]]
+      [:button.btn.btn-primary {:type :submit} "Submit"]])
+   #+end_src
+
+   /You can see full example under the examples/bootstrap directory./
+
+   If the =input= tag was an error, you need to assign an =is-invalid= class and if there was a previous value you must specify it as the =value= etc...
+   One needs to repeat this excersize for every input in every form. This gets depressing after a certain amount of repetitions. Do you enjoy it? I don't.
+   Kuuga is a solution to this problem that allows you to describe a form like this.
+
+   #+begin_src clojure
+   [:form
+    [:div.form-group {:method :post}
+     [:label {:for "input-email"} "Email address"]
+     [:input#input-email.form-control
+      {:type :email :name :email :placeholer "Enter email"}]
+     [:small.form-text.text-muted
+      "We'll never share your email with anyone else."]]
+    [:div.form-group
+     [:label {:for "input-password"} "Password"]
+     [:input#input-password.form-control
+      {:type :password :name :password :placeholer "Password"}]]
+    [:button.btn.btn-primary {:type :submit} "Submit"]]
+   #+end_src
+
+   Now the form can be defined with a succinct Hiccup data, without writing anything related to errors. Please take a look at the Usage for full details.
+
+** Installation
+
+   Add the following dependency to your =project.clj= file:
+
+   [[https://clojars.org/ayato_p/kuuga][https://img.shields.io/clojars/v/ayato_p/kuuga.svg]]
+
+** Usage
+
+   Kuuga allows you to describe transformation rules against any HTML tag, id attribute, and class attribute. Transformatin rules require the tagname in the tag vector.
+   Below is a transformation rule for a =input= tag.
+
+   #+begin_src clojure
+   (require '[kuuga.growing :as growing]
+            '[kuuga.tool :as tool])
+
+   (defmethod growing/transform-by-tag :input
+     [_ options tag-vector]
+     (let [values (:values options)
+           [tag-name tag-options contents] (tool/parse-tag-vector tag-vector)
+           tname (:name tag-options)
+           tag-options (cond-> tag-options
+                         (get values tname) (assoc :value (get values tname)))]
+       [tag-name tag-options contents]))
+   #+end_src
+
+   All extension points for Kuuga are included in the =kuuga.growing= namespace. We have =transform-by-tag=, =transform-by-id=, =transform-by-class= and they are all defined as multimethods.
+
+   New transformation rules will be added using =defmethod=. Each multimethod takes the dispatch value as the first argument, transformation options for the second argument, the tag vector as the third argument, and returns a transformed tag vector(Will mention later, but does not need to return a tag vector). The keyword dispatch value will be passed in to each multimethod, so when adding a new transformation rule specify the keyword value as a dispatch value.
+
+   A given tag vector will first be transformed based on the tag, followed by transformation based on the id attribute, followed by the transformation based on the class attribute.
+
+   Kuuga has the function flavor and the macro flavor of transformations with subtle differences when writing the transformation rules.
+
+*** Function version
+
+
+    The function version is located in the =kuuga.mighty= namespace. By default using =kuuga.mighty/transform= is recommended. Using the function version is easy. The first example in the Usage works with the function version.
+
+    Use like the following:
+
+    #+begin_src clojure
+    (require '[kuuga.mighty :as mighty])
+
+    (def tagvec [:input {:name :username}])
+
+    (def transformed
+      (let [opts {:values {:username "ayato-p"}}]
+        (mighty/transform opts tagvec)))
+
+    transformed
+    ;;=> ([:input {:name :username, :value "ayato-p"} nil])
+
+    (require '[hiccup2.core :as hiccup])
+
+    (str (hiccup/html {:mode :html} transformed))
+    ;;=> "<input name=\"username\" value=\"ayato-p\"></input>"
+    #+end_src
+
+
+*** Macro version
+
+    The macro version is located in the =kuuga.ultimate= namespace. By default using =kuuga.ultimate/transform= is recommended. The macro versions do the transformation at macro expansion time, requiring a bit of trickery.
+
+    #+begin_src clojure
+    (require '[kuuga.growing :as growing])
+
+    (defn update-input-opts [options tag-options]
+      (let [values (:values options)
+            tname (:name tag-options)]
+        (cond-> tag-options
+          (get values tname) (assoc :value (get values tname)))))
+
+    (defmethod growing/transform-by-tag :input
+      [_ options tag-vector]
+      (let [[tag-name tag-options contents] (tool/parse-tag-vector tag-vector)]
+        `[~tag-name
+          (update-input-opts ~options ~tag-options)
+          ~@contents]))
+    #+end_src
+
+
+    These multimethods are used during macro expansion, so note that the arguments for the multimethod's =options= could be a symbol instead of a map.
+
+    Follwoing is the usage.
+
+    #+begin_src clojure
+    (require '[kuuga.ultimate :as ultimate])
+
+    (def transformed
+      (let [opts {:values {:username "ayato-p"}}]
+        (ultimate/transform opts [:input {:name :username}])))
+
+    transformed
+    ;;=> ([:input {:name :username, :value "ayato-p"}])
+
+    (require '[hiccup2.core :as hiccup])
+
+    (str (hiccup/html {:mode :html} transformed))
+    ;; "<input name=\"username\" value=\"ayato-p\">"
+    #+end_src
+
+    Note that the macro version transformers need to directly accept hiccup data structures. You can check that the transformation is taking place during macro expansion time as the following.
+
+    #+begin_src clojure
+    (require '[clojure.walk :as walk])
+
+    (walk/macroexpand-all
+     '(ultimate/transform opts [:input {:name :username}]))
+    ;;=> (clojure.core/list [:input (user/update-input-opts opts {:name :username})])
+    #+end_src
+
+** Bonus Stage
+
+   Earlier I mentioned the transformation rules do not necessarily need to return a tag vector. Something like the folloing can be done.
+
+   #+begin_src clojure
+   (require '[kuuga.growing :as growing]
+            '[kuuga.mighty :as mighty])
+
+   (defmethod growing/transform-by-tag :comment
+     [_ _ _])
+
+   (mighty/transform* [:comment "This is comment"])
+   ;;=> nil
+
+   (defmethod growing/transform-by-tag :+
+     [_ _ tag-vector]
+     (when-let [numbers (next tag-vector)]
+       (apply + numbers)))
+
+   (mighty/transform* [:+ 1 2 3])
+   ;;=> 6
+
+   (defmethod growing/transform-by-tag :field
+     [_ _ tag-vector]
+     (let [[_ label name] tag-vector]
+       [:div.form-group
+        [:label label]
+        [:input {:name name}]]))
+
+   (mighty/transform* [:field "Name" :username])
+   ;;=>
+   ;; [:div.form-group
+   ;;  [:label "Name"]
+   ;;  [:input {:name :username})]]
+   #+end_src
+
+
+** FAQ
+
+   - Q. So you like Kuuga?
+   - A. It is the best
+   - Q. Why name this Kuuga?
+   - A. transform ->  Kamen Rider -> Kuuga
+
+** Credits
+
+   - :+1: [[https://github.com/iku000888][iku000888]] for the first version of the English README
