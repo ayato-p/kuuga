@@ -21,8 +21,8 @@
 
    #+begin_src clojure
    (defn naive-form [{:keys [errors values] :as opts}]
-     [:form
-      [:div.form-group {:method :post}
+     [:form {:method :post}
+      [:div.form-group
        [:label {:for "input-email"} "Email address"]
        [:input#input-email.form-control
         {:type :email :name :email
@@ -50,8 +50,8 @@
    Kuuga is a solution to this problem that allows you to describe a form like this.
 
    #+begin_src clojure
-   [:form
-    [:div.form-group {:method :post}
+   [:form {:method :post}
+    [:div.form-group
      [:label {:for "input-email"} "Email address"]
      [:input#input-email.form-control
       {:type :email :name :email :placeholer "Enter email"}]
