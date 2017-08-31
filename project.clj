@@ -1,8 +1,10 @@
 (defproject ayato_p/kuuga "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "An extensible transformer for Hiccup(-like) data structure"
+  :url "https://github.com/ayato-p/kuuga"
   :license {:name "MIT"
             :url "https://choosealicense.com/licenses/mit"}
+
+  :deploy-repositories [["releases" :clojars]]
 
   :profiles
   {:dev
