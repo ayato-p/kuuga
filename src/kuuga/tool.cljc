@@ -6,15 +6,15 @@
 
 (def ^:private re-tag #"([^\s\.#]+)(?:#([^\s\.#]+))?(?:\.([^\s#]+))?")
 
-(defn parse-tag-keyword [tag-keyword]
-  {:pre [(or (keyword? tag-keyword) (string? tag-keyword) (nil? tag-keyword))]}
-  (when-let [parsed (some->> (cond-> tag-keyword (keyword? tag-keyword) name)
+(defn parse-tag-name [tag-name]
+  {:pre [(or (keyword? tag-name) (string? tag-name) (nil? tag-name))]}
+  (when-let [parsed (some->> (cond-> tag-name (keyword? tag-name) name)
                              (re-matches re-tag))]
     (some-> parsed (update-in [3] maybe-parse-css-classes))))
 
 (defn parse-tag-vector [tag-vector]
   {:pre [(vector? tag-vector)]}
-  (let [[tag-keyword & contents] tag-vector
+  (let [[tag-name & contents] tag-vector
         tag-options (when (map? (first contents)) (first contents))
         contents (cond-> contents (map? tag-options) next)]
-    [tag-keyword tag-options contents]))
+    [tag-name tag-options contents]))

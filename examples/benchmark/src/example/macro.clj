@@ -14,15 +14,15 @@
 
 (defmethod growing/transform-by-class :form-group
   [_ options tag-vector]
-  (let [[tagkw tagopts contents] (tool/parse-tag-vector tag-vector)
+  (let [[tagname tagopts contents] (tool/parse-tag-vector tag-vector)
         contents (reduce (fn [contents' tagvec']
-                           (let [[tk to _] (tool/parse-tag-vector tagvec')
-                                 [_ t] (tool/parse-tag-keyword tk)]
+                           (let [[tn to _] (tool/parse-tag-vector tagvec')
+                                 [_ t] (tool/parse-tag-name tn)]
                              (cond-> (conj contents' tagvec')
                                (= t "input") (conj `(invalid-feedback ~options ~to)))))
                          []
                          contents)]
-    `[~tagkw
+    `[~tagname
       ~tagopts
       ~@contents]))
 
@@ -35,8 +35,8 @@
 
 (defmethod growing/transform-by-tag :input
   [_ options tag-vector]
-  (let [[tagkw tagopts contents] (tool/parse-tag-vector tag-vector)]
-    `[~tagkw
+  (let [[tagname tagopts contents] (tool/parse-tag-vector tag-vector)]
+    `[~tagname
       (update-input-opts ~options ~tagopts)
       ~@contents]))
 

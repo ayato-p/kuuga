@@ -11,8 +11,8 @@
   (cond-> tagopts
     (= (:name tagopts) :weapon) (assoc :value :sword)))
 
-(defn- update-opts-for-kuuga [tagopts tagkw]
-  (let [[_ _ _ classes] (k.tool/parse-tag-keyword tagkw)
+(defn- update-opts-for-kuuga [tagopts tagname]
+  (let [[_ _ _ classes] (k.tool/parse-tag-name tagname)
         classes (->> (cond-> clz (string? clz) vector)
                      (as-> (:class tagopts) clz)
                      (concat classes)
@@ -22,16 +22,16 @@
 
 (defmethod k.growing/transform-by-tag :input
   [_ opts tagvec]
-  (let [[tagkw tagopts contents] (k.tool/parse-tag-vector tagvec)]
-    `[~tagkw
+  (let [[tagname tagopts contents] (k.tool/parse-tag-vector tagvec)]
+    `[~tagname
       (update-opts-for-input ~tagopts)
       ~@contents]))
 
 (defmethod k.growing/transform-by-id :kuuga
   [_ opts tagvec]
-  (let [[tagkw tagopts contents] (k.tool/parse-tag-vector tagvec)]
-    `[~tagkw
-      (update-opts-for-kuuga ~tagopts ~tagkw)
+  (let [[tagname tagopts contents] (k.tool/parse-tag-vector tagvec)]
+    `[~tagname
+      (update-opts-for-kuuga ~tagopts ~tagname)
       ~@contents]))
 
 (t/deftest transform*-test

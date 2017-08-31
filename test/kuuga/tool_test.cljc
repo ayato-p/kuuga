@@ -3,10 +3,10 @@
             #?(:clj [clojure.test :as t]
                :cljs [cljs.test :as t])))
 
-(t/deftest parse-tag-keyword-test
+(t/deftest parse-tag-nametest
   (t/testing "simple test cases"
-    (t/are [tag-keyword result] (= (k.tool/parse-tag-keyword tag-keyword)
-                                   result)
+    (t/are [tag-name result] (= (k.tool/parse-tag-name tag-name)
+                                result)
       :div#kuuga.mighty.form ["div#kuuga.mighty.form" "div" "kuuga" ["mighty" "form"]]
       :div#kuuga.ultimate.form ["div#kuuga.ultimate.form" "div" "kuuga" ["ultimate" "form"]]
       :div#kuuga ["div#kuuga" "div" "kuuga" nil]

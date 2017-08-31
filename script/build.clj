@@ -5,16 +5,16 @@
 
 (defmethod k.growing/transform-by-tag :input
   [_ opts tagvec]
-  (let [[tagkw tagopts contents] (k.tool/parse-tag-vector tagvec)]
-    `[~tagkw
+  (let [[tagname tagopts contents] (k.tool/parse-tag-vector tagvec)]
+    `[~tagname
       (kuuga.ultimate-cljs-test/update-opts-for-input ~tagopts)
       ~@contents]))
 
 (defmethod k.growing/transform-by-id :kuuga
   [_ opts tagvec]
-  (let [[tagkw tagopts contents] (k.tool/parse-tag-vector tagvec)]
-    `[~tagkw
-      (kuuga.ultimate-cljs-test/update-opts-for-kuuga ~tagopts ~tagkw)
+  (let [[tagname tagopts contents] (k.tool/parse-tag-vector tagvec)]
+    `[~tagname
+      (kuuga.ultimate-cljs-test/update-opts-for-kuuga ~tagopts ~tagname)
       ~@contents]))
 
 (api/build "test"

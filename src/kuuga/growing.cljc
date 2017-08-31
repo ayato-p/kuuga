@@ -10,8 +10,8 @@
 
 (defn modifier [options tag-vector]
   (if (vector? tag-vector)
-    (let [[tag-keyword & _] tag-vector
-          [origin tag id classes] (k.tool/parse-tag-keyword tag-keyword)]
+    (let [[tag-name & _] tag-vector
+          [origin tag id classes] (k.tool/parse-tag-name tag-name)]
       (reduce (fn [tagvec clazz]
                 (transform-by-class clazz options tagvec))
               (->> tag-vector
