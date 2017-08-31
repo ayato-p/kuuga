@@ -7,8 +7,8 @@
   (cond-> tagopts
     (= (:name tagopts) :weapon) (assoc :value :sword)))
 
-(defn- update-opts-for-kuuga [tagopts tagkw]
-  (let [[_ _ _ classes] (k.tool/parse-tag-keyword tagkw)
+(defn- update-opts-for-kuuga [tagopts tagname]
+  (let [[_ _ _ classes] (k.tool/parse-tag-name tagname)
         classes (->> (cond-> clz (string? clz) vector)
                      (as-> (:class tagopts) clz)
                      (concat classes)
