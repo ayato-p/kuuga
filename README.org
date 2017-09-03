@@ -46,7 +46,7 @@
    /You can see full example under the examples/bootstrap directory./
 
    If the =input= tag was an error, you need to assign an =is-invalid= class and if there was a previous value you must specify it as the =value= etc...
-   One needs to repeat this excersize for every input in every form. This gets depressing after a certain amount of repetitions. Do you enjoy it? I don't.
+   One needs to repeat this excercise for every input in every form. This gets depressing after a certain amount of repetitions. Do you enjoy it? I don't.
    Kuuga is a solution to this problem that allows you to describe a form like this.
 
    #+begin_src clojure
@@ -74,7 +74,7 @@
 
 ** Usage
 
-   Kuuga allows you to describe transformation rules against any HTML tag, id attribute, and class attribute. Transformatin rules require the tagname in the tag vector.
+   Kuuga allows you to describe transformation rules against any HTML tag, id attribute, and class attribute. Transformation rules require the tagname in the tag vector.
    Below is a transformation rule for a =input= tag.
 
    #+begin_src clojure
@@ -93,7 +93,7 @@
 
    All extension points for Kuuga are included in the =kuuga.growing= namespace. We have =transform-by-tag=, =transform-by-id=, =transform-by-class= and they are all defined as multimethods.
 
-   New transformation rules will be added using =defmethod=. Each multimethod takes the dispatch value as the first argument, transformation options for the second argument, the tag vector as the third argument, and returns a transformed tag vector(Will mention later, but does not need to return a tag vector). The keyword dispatch value will be passed in to each multimethod, so when adding a new transformation rule specify the keyword value as a dispatch value.
+   New transformation rules will be added using =defmethod=. Each multimethod takes the dispatch value as the first argument, transformation options for the second argument, the tag vector as the third argument, and returns a transformed tag vector (will mention later, but does not need to return a tag vector). The keyword dispatch value will be passed into each multimethod, so when adding a new transformation rule you must specify the keyword value as a dispatch value.
 
    A given tag vector will first be transformed based on the tag, followed by transformation based on the id attribute, followed by the transformation based on the class attribute.
 
@@ -149,7 +149,7 @@
 
     These multimethods are used during macro expansion, so note that the arguments for the multimethod's =options= could be a symbol instead of a map.
 
-    Follwoing is the usage.
+    Following is the usage.
 
     #+begin_src clojure
     (require '[kuuga.ultimate :as ultimate])
@@ -167,7 +167,7 @@
     ;; "<input name=\"username\" value=\"ayato-p\">"
     #+end_src
 
-    Note that the macro version transformers need to directly accept hiccup data structures. You can check that the transformation is taking place during macro expansion time as the following.
+    Note that the macro version transformers needs to directly accept hiccup data structures. You can check that the transformation is taking place during macro expansion time as the following.
 
     #+begin_src clojure
     (require '[clojure.walk :as walk])
