@@ -7,8 +7,9 @@
 (def ^:private re-tag #"([^\s\.#]+)(?:#([^\s\.#]+))?(?:\.([^\s#]+))?")
 
 (defn parse-tag-name [tag-name]
-  {:pre [(or (keyword? tag-name) (string? tag-name) (nil? tag-name))]}
-  (when-let [parsed (some->> (cond-> tag-name (keyword? tag-name) name)
+  {:pre [(or (string? tag-name) (keyword? tag-name) (symbol? tag-name) (nil? tag-name))]}
+  (when-let [parsed (some->> (cond-> tag-name
+                               (or (keyword? tag-name) (symbol? tag-name)) name)
                              (re-matches re-tag))]
     (some-> parsed (update-in [3] maybe-parse-css-classes))))
 

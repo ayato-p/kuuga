@@ -8,8 +8,15 @@
 (defn reset-context! []
   (reset! +transform-context+ {}))
 
+(defn- tag-vector? [tag-vector]
+  (and (vector? tag-vector)
+       (let [tag-name (first tag-vector)]
+         (or (keyword? tag-name)
+             (string? tag-name)
+             (symbol? tag-name)))))
+
 (defn modifier [options tag-vector]
-  (if (vector? tag-vector)
+  (if (tag-vector? tag-vector)
     (let [[tag-name & _] tag-vector
           [origin tag id classes] (k.tool/parse-tag-name tag-name)]
       (reduce (fn [tagvec clazz]
