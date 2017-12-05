@@ -11,12 +11,12 @@
    {:dependencies [[com.cemerick/piggieback "0.2.2"]]}
 
    :provided
-   {:dependencies [[org.clojure/clojure "1.9.0-alpha17"]
-                   [org.clojure/clojurescript "1.9.908"]]}
+   {:dependencies [[org.clojure/clojure "1.9.0-RC2"]
+                   [org.clojure/clojurescript "1.9.946"]]}
 
    :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
    :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
-   :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha17"]]}
+   :1.9 {:dependencies [[org.clojure/clojure "1.9.0-RC2"]]}
    :plugins/cloverage {:plugins [[lein-cloverage "1.0.9"]]}
    :plugins/exec {:plugins [[lein-exec "0.3.6"]]}
 
