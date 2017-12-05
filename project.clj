@@ -1,4 +1,4 @@
-(defproject ayato_p/kuuga "0.1.1"
+(defproject ayato_p/kuuga "0.1.2-SNAPSHOT"
   :description "An extensible transformer for Hiccup(-like) data structure"
   :url "https://github.com/ayato-p/kuuga"
   :license {:name "MIT"
